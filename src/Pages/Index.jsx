@@ -3,11 +3,11 @@ import { useEffect } from "react";
 
 const Index = () => {
   const [listData, setListData] = useState([]);
-  const [stockLengths, setStockLengths] = useState();
   const [sortedList, setSortedList] = useState();
   const textAreaPlaceholder =
     "Input or Copy/paste your list here\nYour data should be in the following format, ending with a semi-colon:\nStock Size, Piece Mark, Length;\n4x1/4 Flat, P0002, 14400;";
-  const tempInputValue = "4x1/4 Flat, P0001, 3205;\n4x1/4 Flat, P0002, 1456;\n4x1/4 Flat, P0003, 6132;\n4x1/4 Flat, P0004, 4821;\n4x1/4 Flat, P0005, 2324;\n4x1/4 Flat, P0006, 5179;\n4x1/4 Flat, P0007, 2833;\n4x1/4 Flat, P0008, 3642;\n4x1/4 Flat, P0009, 5069;\n4x1/4 Flat, P0010, 4378;\n4x1/4 Flat, P0011, 6485;\n4x1/4 Flat, P0012, 267;\n4x1/4 Flat, P0013, 1390;\n4x1/4 Flat, P0014, 4653;\n4x1/4 Flat, P0015, 1776;\n4x1/4 Flat, P0016, 4732;\n3x1/4 Flat, P0017, 6479;\n3x1/4 Flat, P0018, 609;\n3x1/4 Flat, P0019, 1924;\n3x1/4 Flat, P0020, 5052;"
+  const tempInputValue =
+    "4x1/4 Flat, P0001, 3205;\n4x1/4 Flat, P0002, 1456;\n4x1/4 Flat, P0003, 6132;\n4x1/4 Flat, P0004, 4821;\n4x1/4 Flat, P0005, 2324;\n4x1/4 Flat, P0006, 5179;\n4x1/4 Flat, P0007, 2833;\n4x1/4 Flat, P0008, 3642;\n4x1/4 Flat, P0009, 5069;\n4x1/4 Flat, P0010, 4378;\n4x1/4 Flat, P0011, 6485;\n4x1/4 Flat, P0012, 267;\n4x1/4 Flat, P0013, 1390;\n4x1/4 Flat, P0014, 4653;\n4x1/4 Flat, P0015, 1776;\n4x1/4 Flat, P0016, 4732;\n3x1/4 Flat, P0017, 6479;\n3x1/4 Flat, P0018, 609;\n3x1/4 Flat, P0019, 1924;\n3x1/4 Flat, P0020, 5052;";
 
   // 4x1/4 Flat, P0001, 2200;
   // 6x3/8 Flat, P0002, 1200;
@@ -23,29 +23,66 @@ const Index = () => {
   // data shape to create from text
 
   const handleInput = (inputString) => {
-    const items = new Map();
     // converts data into an array of objects
-    //one array object per line and filter out empty lines
+    // one array object per line and filter out empty lines
+    const items = {
+      stockSizes: {},
+      used: 0,
+      waste: 0,
+    };
+
     const arrStr = inputString.split("\n").filter((el) => el !== "");
     const arr = arrStr.map((el) => parseLine(el));
 
-    //loop over arr
+    //  parse data first, sort the data into a new container how you need it, put into state
+
+    // loop over arr
+    // sorts into arrays by stock size
     for (let i = 0; i < arr.length; i++) {
       // if items object has stock name, add to array, else create new property and add
-      if (items.has(arr[i].stock)) {
-        items.set(arr[i].stock, [...items.get(arr[i].stock), arr[i]]);
+      if (arr[i].stock in items.stockSizes) {
+        items.stockSizes[arr[i].stock].unsorted.push(arr[i]);
       } else {
-        items.set(arr[i].stock, [arr[i]]);
+        items.stockSizes[arr[i].stock] = {
+          stockSizeName: arr[i].stock,
+          unsorted: [arr[i]],
+          sortedDsc: [],
+          lengths: [],
+          overLength:[],
+          standardLength: 6096,
+          numberOfLengths: 0,
+          used: 0,
+          waste: 0,
+        };
       }
     }
 
-    console.log(items)
-    setListData(items);
+    // console.log(items.stockSizes)
+
+    // sort and filter stockSize items descending order and good or overlength
+    for (const stockSize in items.stockSizes) {
+      const stock = items.stockSizes[stockSize]
+      const sorted = stock.unsorted.sort((a, b) => b.length - a.length);
+      stock.sortedDsc = sorted.filter((el) => el.length <= stock.standardLength)
+      stock.overLength = sorted.filter((el) => el.length > stock.standardLength)
+    };
+
+    console.log(items);
+    //   }
+    //   stockSizeName: '4x1/4',
+    //   lengths: [],
+    //   standardLength: 6096,
+    //   used: 0,
+    //   waste: 0,
+    // }
+
+    // setListData(items);
   };
 
-  const sortList = (list, stdLength) => {
+
+  const sortIntoLenghts = (list, stdLength) => {
     const sorted = list.sort((a, b) => b.length - a.length);
-    const overStdLength = sorted.filter((el) => el.length > stdLength)
+    const overStdLength = sorted.filter((el) => el.length > stdLength);
     let withinStdLength = sorted.filter((el) => el.length <= stdLength);
 
     // sample data for sorting
@@ -91,6 +128,7 @@ const Index = () => {
 
     // stockSizeObject
     // {
+    //   name: string, (name of stock size i.e. "3x1/4")
     //   lengths: [lengthObjects],
     //   standardLength: number, (standard stock length material comes in)
     //   used: number, (total length used)
@@ -124,22 +162,61 @@ const Index = () => {
     // bin packing problem
     // area opimization
 
-    return {
-      withinStdLength: withinStdLength,
-      overStdLength: overStdLength,
-    };
-
+    // setSortedList(
+    //   {
+    //     stockSizes: [
+    //       {
+    //         name: '4x1/4',
+    //         lengths: [
+    //           {
+    //             stockSize: '4x1/4',
+    //             lengthObjectId: 1,
+    //             parts: [
+    //               {
+    //                 stock: '4x1/4',
+    //                 mark: '0001',
+    //                 length: 2234,
+    //                },
+    //                {
+    //                 stock: '4x1/4',
+    //                 mark: '0002',
+    //                 length: 1234,
+    //                },
+    //                {
+    //                 stock: '4x1/4',
+    //                 mark: '0003',
+    //                 length: 1011,
+    //                },
+    //                {
+    //                 stock: '4x1/4',
+    //                 mark: '0004',
+    //                 length: 245,
+    //                },
+    //             ],
+    //             used: 0,
+    //             waste: 0,
+    //           }
+    //         ],
+    //         standardLength: 6096,
+    //         used: 0,
+    //         waste: 0,
+    //       }
+    //     ],
+    //     used: 0,
+    //     waste: 0,
+    //   }
+    // );
   };
 
   const parseLine = (str) => {
     //input should be in "Stock Size, Piece Mark, Length" => "4x1/4 Flat, P0002, 14400" format
-    const arr = str.slice(0, str.indexOf(";")).trim().split(", ");
+    let arr = str.slice(0, str.indexOf(";")).trim().split(", ");
 
     // check if feet/inches
     let length = arr[2]?.trim();
 
     // set length value
-    if (length?.includes('"') || length?.includes("'")) {
+    if (length.includes('"') || length.includes("'")) {
       length = convertFeetInchesToMm(length);
     } else {
       length = Number(length);
@@ -147,7 +224,7 @@ const Index = () => {
 
     // put data into object
     const obj = {
-      stock: arr[0]?.trim(),
+      stock: arr[0]?.trim().split(" ").join("_"), // convert spaces to underscore
       mark: arr[1]?.trim(),
       length: length,
     };
@@ -237,13 +314,15 @@ const Index = () => {
         ></textarea>
       </div>
 
-      {Array.from(listData).map((el, ind) => {
+      {/* {sortedList.stockSizes.map((stockSize, ind) => {
         return (
+          // one table per stock size
           <table key={ind} className="mt-10 border-separate border-spacing-2 border-2 border-slate-300 w-full text-left bg-slate-600 text-slate-200 rounded-lg table-fixed">
             <thead>
-              <tr className="text-2xl font-bold">
-                <td>{el[0]}</td>
+            <tr className="text-2xl font-bold">
+                <td>{stockSize.name}</td>
               </tr>
+
               <tr className="bg-slate-500 text-slate-200">
                 <th className="border border-slate-400 p-2 rounded-md">Mark</th>
                 <th className="border border-slate-400 p-2 rounded-md">
@@ -251,8 +330,20 @@ const Index = () => {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {sortList(el[1], 6096).withinStdLength.map((row, ind) => {
+            <tbody> */}
+
+      {/* length groups */}
+      {/* {stockSize.lengths.map((lengthGroup, ind) => {
+                return (
+                  <tr className="text-2xl font-bold">
+                    <td>{lengthGroup.lengthObjectId}</td>
+                  </tr>
+
+                )
+              })} */}
+
+      {/* partObjects */}
+      {/* {sortList(el[1], 6096).withinStdLength.map((row, ind) => {
                 return (
                   <tr key={ind} className="text-slate-300">
                     <td className="border border-slate-500 p-2 rounded-md">
@@ -263,13 +354,13 @@ const Index = () => {
                     </td>
                   </tr>
                 );
-              })}
+              })} */}
 
-              <tr className="text-red-600 text-xl font-bold">
+      {/* <tr className="text-red-600 text-xl font-bold">
                 <td className="p-2">Over Length</td>
-              </tr>
+              </tr> */}
 
-              {sortList(el[1], 6096).overStdLength.map((row, ind) => {
+      {/* {sortList(el[1], 6096).overStdLength.map((row, ind) => {
                 return (
                   <tr key={ind} className="text-slate-300">
                     <td className="border border-slate-500 p-2 rounded-md">
@@ -280,11 +371,11 @@ const Index = () => {
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
+              })} */}
+      {/* </tbody>
           </table>
         );
-      })}
+      })} */}
     </div>
   );
 };
