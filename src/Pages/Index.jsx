@@ -48,7 +48,7 @@ const Index = () => {
           unsorted: [arr[i]],
           sortedDsc: [],
           lengths: [],
-          overLength:[],
+          overLength: [],
           standardLength: 6096,
           numberOfLengths: 0,
           used: 0,
@@ -61,71 +61,84 @@ const Index = () => {
 
     // sort and filter stockSize items descending order and good or overlength
     for (const stockSize in items.stockSizes) {
-      const stock = items.stockSizes[stockSize]
+      const stock = items.stockSizes[stockSize];
       const sorted = stock.unsorted.sort((a, b) => b.length - a.length);
-      stock.sortedDsc = sorted.filter((el) => el.length <= stock.standardLength)
-      stock.overLength = sorted.filter((el) => el.length > stock.standardLength)
-    };
+      stock.sortedDsc = sorted.filter(
+        (el) => el.length <= stock.standardLength
+      );
+      stock.overLength = sorted.filter(
+        (el) => el.length > stock.standardLength
+      );
+    }
 
-    console.log(items);
-    //   }
-    //   stockSizeName: '4x1/4',
-    //   lengths: [],
-    //   standardLength: 6096,
-    //   used: 0,
-    //   waste: 0,
-    // }
+    // parse sorted/filtered stockSize items and place into length groups
 
-    // setListData(items);
+    class length {
+      constructor(id, stockSize, stdLength) {
+        this.id = id;
+        this.stockSize = stockSize;
+        this.lengthMark = `${stockSize}-${id}`;
+        this.stdLength = stdLength;
+        this.parts = [];
+        this.lengthUsed = 0;
+        this.lengthWaste = stdLength; // reduces as stockItems are added
+      }
+    }
+
+    // loop over stock sizes
+    for (const stockSize in items.stockSizes) {
+      const stock = items.stockSizes[stockSize];
+      const stockItems = stock.sortedDsc;
+      const lengths = stock.lengths;
+
+      let lengthCount = 1; // length id / lengthMark suffix
+
+      while (stockItems.length > 0) {
+        //create a new length object
+        const len = new length(
+          lengthCount.toString().padStart(3, "0"),
+          stock.stockSizeName,
+          stock.standardLength
+        );
+
+        lengthCount++; // increments id number
+
+        // add largest stock length available for the current lengthWaste 'space'
+        // add part length to lengthUsed
+        // subtract part length to lengthWaste
+        // add to length parts array and remove from stockItems array
+        for (let i = 0; i < stockItems.length; i++) {
+          if (stockItems[i].length <= len.lengthWaste) {
+            len.lengthUsed += stockItems[i].length;
+            len.lengthWaste -= stockItems[i].length;
+            len.parts.push(stockItems.splice(i, 1)[0]);
+            i = 0; // restarts loop to search again
+          }
+        }
+        //push len object to lengths array in stock object
+        lengths.push(len);
+      }
+      setSortedList(items);
+      console.log(items.stockSizes);
+    }
   };
 
-
   const sortIntoLenghts = (list, stdLength) => {
-    const sorted = list.sort((a, b) => b.length - a.length);
-    const overStdLength = sorted.filter((el) => el.length > stdLength);
-    let withinStdLength = sorted.filter((el) => el.length <= stdLength);
-
-    // sample data for sorting
-    // 4x1/4 Flat, P0001, 3205;
-    // 4x1/4 Flat, P0002, 1456;
-    // 4x1/4 Flat, P0003, 6132;
-    // 4x1/4 Flat, P0004, 4821;
-    // 4x1/4 Flat, P0005, 2324;
-    // 4x1/4 Flat, P0006, 5179;
-    // 4x1/4 Flat, P0007, 2833;
-    // 4x1/4 Flat, P0008, 3642;
-    // 4x1/4 Flat, P0009, 5069;
-    // 4x1/4 Flat, P0010, 4378;
-    // 4x1/4 Flat, P0011, 6485;
-    // 4x1/4 Flat, P0012, 267;
-    // 4x1/4 Flat, P0013, 1390;
-    // 4x1/4 Flat, P0014, 4653;
-    // 4x1/4 Flat, P0015, 1776;
-    // 4x1/4 Flat, P0016, 4732;
-    // 4x1/4 Flat, P0017, 6479;
-    // 4x1/4 Flat, P0018, 609;
-    // 4x1/4 Flat, P0019, 1924;
-    // 4x1/4 Flat, P0020, 5052;
-
     // the idea is to sort this list into smaller lists,
     // where the last number (the length) of each object when added up,
     // is closest to the standard 'stock lengths' that the material comes in
     // most material stock lengths are 20'-0" / 240" / 6096mm long
-
     // take in a list of objects
     // sort objects decending by length property. this value should always be metric in mm
     // checks to see if any of the lengths require are longer than the stock length
     // if some longer lengths are present, they should be moved to the 'over size' group
     // create a new stock length object, that represents an entire stock length of material
-    //
-
     // listObject
     // {
     //   stockSizes: [stockSizeObjects],
     //   used: total length used
     //   waste: length left over,
     // }
-
     // stockSizeObject
     // {
     //   name: string, (name of stock size i.e. "3x1/4")
@@ -134,7 +147,6 @@ const Index = () => {
     //   used: number, (total length used)
     //   waste: number, (total length left over)
     // }
-
     // length objects
     // {
     //   stockSize: string,
@@ -143,25 +155,21 @@ const Index = () => {
     //   used: total length used
     //   waste: length left over,
     // }
-
     // partObject (created from string input)
     // {
     //  stock: string,
     //  mark: string,
     //  length: number,
     // }
-
     // return should be an object
     // next fit algorithim
     // tree algo (heap sort)
     // smallest number first recurses back, left side of tree
     // a v l trees
     // dfs recurrsive tree transversal
-
     // rectangle packing
     // bin packing problem
     // area opimization
-
     // setSortedList(
     //   {
     //     stockSizes: [
@@ -314,68 +322,90 @@ const Index = () => {
         ></textarea>
       </div>
 
-      {/* {sortedList.stockSizes.map((stockSize, ind) => {
-        return (
-          // one table per stock size
-          <table key={ind} className="mt-10 border-separate border-spacing-2 border-2 border-slate-300 w-full text-left bg-slate-600 text-slate-200 rounded-lg table-fixed">
-            <thead>
-            <tr className="text-2xl font-bold">
-                <td>{stockSize.name}</td>
-              </tr>
+      {sortedList &&
+        Object.keys(sortedList.stockSizes).map((stockSize, ind) => {
+          return (
+            // one table per stock size
+            <table
+              key={ind}
+              className="mt-10 border-separate border-spacing-2 border-2 border-slate-300 w-full text-left bg-slate-600 text-slate-200 rounded-lg table-fixed"
+            >
+              <thead>
+                <tr className="text-2xl font-bold">
+                  <td>{stockSize}</td>
+                </tr>
 
-              <tr className="bg-slate-500 text-slate-200">
-                <th className="border border-slate-400 p-2 rounded-md">Mark</th>
-                <th className="border border-slate-400 p-2 rounded-md">
-                  Length
-                </th>
-              </tr>
-            </thead>
-            <tbody> */}
+                <tr className="bg-slate-500 text-slate-200">
+                  <th className="border border-slate-400 p-2 rounded-md">
+                    Mark
+                  </th>
+                  <th className="border border-slate-400 p-2 rounded-md">
+                    Length
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* length groups */}
+                {sortedList &&
+                  sortedList.stockSizes[stockSize].lengths.map(
+                    (lengthGroup, ind) => {
+                      return (
+                        <>
+                          <tr className="text-lg font-semibold">
+                            <th>Length {lengthGroup.id}</th>
+                          </tr>
 
-      {/* length groups */}
-      {/* {stockSize.lengths.map((lengthGroup, ind) => {
-                return (
-                  <tr className="text-2xl font-bold">
-                    <td>{lengthGroup.lengthObjectId}</td>
-                  </tr>
+                          {/* partObjects */}
+                          {lengthGroup?.parts?.map((row, ind) => {
+                            return (
+                              <tr key={ind} className="text-slate-300">
+                                <td className="border border-slate-500 p-2 rounded-md">
+                                  {row.mark}
+                                </td>
+                                <td className="border border-slate-500 p-2 rounded-md">
+                                  {row.length}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        
+                          {/* Offcut */}
+                          <tr key={ind} className="text-blue-300">
+                            <td className="border border-blue-500 p-2 rounded-md">
+                              Off-Cut
+                            </td>
+                            <td className="border border-blue-500 p-2 rounded-md">
+                              {lengthGroup.lengthWaste}
+                            </td>
+                          </tr>
+                        </>
+                      );
+                    }
+                  )}
 
-                )
-              })} */}
+                <tr className="text-red-600 text-xl font-bold">
+                  <td className="p-2">Over Length</td>
+                </tr>
 
-      {/* partObjects */}
-      {/* {sortList(el[1], 6096).withinStdLength.map((row, ind) => {
-                return (
-                  <tr key={ind} className="text-slate-300">
-                    <td className="border border-slate-500 p-2 rounded-md">
-                      {row.mark}
-                    </td>
-                    <td className="border border-slate-500 p-2 rounded-md">
-                      {row.length}
-                    </td>
-                  </tr>
-                );
-              })} */}
-
-      {/* <tr className="text-red-600 text-xl font-bold">
-                <td className="p-2">Over Length</td>
-              </tr> */}
-
-      {/* {sortList(el[1], 6096).overStdLength.map((row, ind) => {
-                return (
-                  <tr key={ind} className="text-slate-300">
-                    <td className="border border-slate-500 p-2 rounded-md">
-                      {row.mark}
-                    </td>
-                    <td className="border border-slate-500 p-2 rounded-md">
-                      {row.length}
-                    </td>
-                  </tr>
-                );
-              })} */}
-      {/* </tbody>
-          </table>
-        );
-      })} */}
+                {sortedList &&
+                  sortedList.stockSizes[stockSize].overLength.map(
+                    (row, ind) => {
+                      return (
+                        <tr key={ind} className="text-slate-300">
+                          <td className="border border-slate-500 p-2 rounded-md">
+                            {row.mark}
+                          </td>
+                          <td className="border border-slate-500 p-2 rounded-md">
+                            {row.length}
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
+              </tbody>
+            </table>
+          );
+        })}
     </div>
   );
 };
