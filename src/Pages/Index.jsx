@@ -289,22 +289,29 @@ const Index = () => {
 
   return (
     <div className="p-10">
-      <div className="text-base text-slate-800">
-        <h1 className="text-2xl">Cut List</h1>
-        <h2 className="text-xl">Linear Nesting App</h2>
+      <div className="text-base text-slate-800 flex flex-col gap-2">
+        <h1 className="text-3xl font-bold">Cut List</h1>
+        <h2 className="text-2xl font-semibold">Linear Nesting App</h2>
         <p>
           This app takes in an unsorted list of pieces of a specific length and
           creates a linear cutting list based on an input length of standard
-          stock and then sorts the list
+          stock and then sorts the list.
         </p>
-        <p>
-          Let's start off with a simple input and sort system and expand from
-          there
-        </p>
-        <p>
-          parse the data, sort into lists of the same kind based on the stock
-          section size (e.g. 4x1/4)
-        </p>
+        <h3 className="text-xl font-semibold">Feature Set Checklist</h3>
+        <div className="ml-4  flex flex-col gap-2">
+          <p className="line-through">
+            Let's start off with a simple input and sort system and expand from
+            there.
+          </p>
+          <p className="line-through">
+            Parse the data, sort into lists of the same kind based on the stock
+            section size (e.g. 4x1/4).
+          </p>
+          <p className="">Add ability to change the stock lengths for each size of material</p>
+          <p className="">Update UI / Styling</p>
+          <p className="">Basic text printable/exportable style e.g. print to pdf, email, etc</p>
+          <p className="">Bar graph representation of length usage</p>
+        </div>
       </div>
 
       <div className="flex flex-col text-base text-slate-800 mt-10">
@@ -368,7 +375,7 @@ const Index = () => {
                               </tr>
                             );
                           })}
-                        
+
                           {/* Offcut */}
                           <tr key={ind} className="text-blue-300">
                             <td className="border border-blue-500 p-2 rounded-md">
@@ -383,11 +390,13 @@ const Index = () => {
                     }
                   )}
 
-                <tr className="text-red-600 text-xl font-bold">
-                  <td className="p-2">Over Length</td>
-                </tr>
+                {sortedList.stockSizes[stockSize].overLength.length > 0 && (
+                  <tr className="text-red-600 text-xl font-bold">
+                    <td className="p-2">Over Length</td>
+                  </tr>
+                )}
 
-                {sortedList &&
+                {sortedList.stockSizes[stockSize].overLength.length > 0 &&
                   sortedList.stockSizes[stockSize].overLength.map(
                     (row, ind) => {
                       return (
