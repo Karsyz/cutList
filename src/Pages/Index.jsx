@@ -1,26 +1,21 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 
 const Index = () => {
   const [listData, setListData] = useState([]);
+  const [inputString, setInputString] = useState("");
   const [sortedList, setSortedList] = useState();
   const textAreaPlaceholder =
     "Input or Copy/paste your list here\nYour data should be in the following format, ending with a semi-colon:\nStock Size, Piece Mark, Length;\n4x1/4 Flat, P0002, 14400;";
   const tempInputValue =
-    "4x1/4 Flat, P0001, 3205;\n4x1/4 Flat, P0002, 1456;\n4x1/4 Flat, P0003, 6132;\n4x1/4 Flat, P0004, 4821;\n4x1/4 Flat, P0005, 2324;\n4x1/4 Flat, P0006, 5179;\n4x1/4 Flat, P0007, 2833;\n4x1/4 Flat, P0008, 3642;\n4x1/4 Flat, P0009, 5069;\n4x1/4 Flat, P0010, 4378;\n4x1/4 Flat, P0011, 6485;\n4x1/4 Flat, P0012, 267;\n4x1/4 Flat, P0013, 1390;\n4x1/4 Flat, P0014, 4653;\n4x1/4 Flat, P0015, 1776;\n4x1/4 Flat, P0016, 4732;\n3x1/4 Flat, P0017, 6479;\n3x1/4 Flat, P0018, 609;\n3x1/4 Flat, P0019, 1924;\n3x1/4 Flat, P0020, 5052;";
-
-  // 4x1/4 Flat, P0001, 2200;
-  // 6x3/8 Flat, P0002, 1200;
-  // 6x3/8 Flat, P0002, 250;
-
-  // 4x1/4 Flat, P0001, 2200;
-  // 6x3/8 Flat, P0002, 1200;
-  // 6x3/8 Flat, P0003, 250;
-  // 6x3/8 Flat, P0004, 9'-10 3/8";
-
-  // const parsedDataModel = new Map();
+    "4x1/4 Flat, P0001, 3205;\n4x1/4 Flat, P0002, 1456;\n4x1/4 Flat, P0003, 6132;\n4x1/4 Flat, P0004, 4821;\n4x1/4 Flat, P0005, 2324;\n4x1/4 Flat, P0006, 5179;\n4x1/4 Flat, P0007, 2833;\n4x1/4 Flat, P0008, 3642;\n4x1/4 Flat, P0009, 5069;\n4x1/4 Flat, P0010, 4378;\n4x1/4 Flat, P0011, 6485;\n4x1/4 Flat, P0012, 267;\n4x1/4 Flat, P0013, 1390;\n4x1/4 Flat, P0014, 4653;\n4x1/4 Flat, P0015, 1776;\n4x1/4 Flat, P0016, 4732;\n3x1/4 Flat, P0017, 6479;\n3x1/4 Flat, P0018, 609;\n3x1/4 Flat, P0019, 1924;\n3x1/4 Flat, P0020, 5052;\n";
 
   // data shape to create from text
+
+  useEffect(() => {
+    if (inputString.includes(";")) {
+      handleInput(inputString);
+    }
+  }, [inputString]);
 
   const handleInput = (inputString) => {
     // converts data into an array of objects
@@ -56,8 +51,6 @@ const Index = () => {
         };
       }
     }
-
-    // console.log(items.stockSizes)
 
     // sort and filter stockSize items descending order and good or overlength
     for (const stockSize in items.stockSizes) {
@@ -119,7 +112,6 @@ const Index = () => {
         lengths.push(len);
       }
       setSortedList(items);
-      console.log(items.stockSizes);
     }
   };
 
@@ -224,7 +216,7 @@ const Index = () => {
     let length = arr[2]?.trim();
 
     // set length value
-    if (length.includes('"') || length.includes("'")) {
+    if (length?.includes('"') || length?.includes("'")) {
       length = convertFeetInchesToMm(length);
     } else {
       length = Number(length);
@@ -260,7 +252,6 @@ const Index = () => {
 
     //remove " at end of string if present
     const str = inputString.split('"')[0];
-    // console.log(str);
 
     //split string into feet and inches array
     const feetInches = str.trim().split("'-");
@@ -270,7 +261,6 @@ const Index = () => {
 
     //inches
     const inchesArr = feetInches[1].split(" ");
-    // console.log(inchesArr);
 
     //add inches to totalInches
     totalInches += Number(inchesArr[0]);
@@ -280,7 +270,6 @@ const Index = () => {
       const fraction = inchesArr[1].split("/");
       // convert to decimal and add to totalInches
       totalInches += Number(fraction[0]) / Number(fraction[1]);
-      // console.log(fraction);
     }
 
     const mm = Math.round(totalInches * numberOfMmInOneInch);
@@ -288,133 +277,157 @@ const Index = () => {
   };
 
   return (
-    <div className="p-10">
-      <div className="text-base text-slate-800 flex flex-col gap-2">
-        <h1 className="text-3xl font-bold">Cut List</h1>
-        <h2 className="text-2xl font-semibold">Linear Nesting App</h2>
-        <p>
-          This app takes in an unsorted list of pieces of a specific length and
-          creates a linear cutting list based on an input length of standard
-          stock and then sorts the list.
-        </p>
-        <h3 className="text-xl font-semibold">Feature Set Checklist</h3>
-        <div className="ml-4  flex flex-col gap-2">
-          <p className="line-through">
-            Let's start off with a simple input and sort system and expand from
-            there.
+    <div className="p-10 w-full flex justify-center">
+      <div className="max-w-3xl">
+        <div className="text-base text-slate-800 flex flex-col gap-2">
+          <h1 className="text-3xl font-bold">Cut List</h1>
+          <h2 className="text-2xl font-semibold">Linear Nesting App</h2>
+          <p>
+            This app takes in an unsorted list of pieces of a specific length
+            and creates a linear cutting list based on an input length of
+            standard stock and then sorts the list.
           </p>
-          <p className="line-through">
-            Parse the data, sort into lists of the same kind based on the stock
-            section size (e.g. 4x1/4).
-          </p>
-          <p className="">Add ability to change the stock lengths for each size of material</p>
-          <p className="">Update UI / Styling</p>
-          <p className="">Basic text printable/exportable style e.g. print to pdf, email, etc</p>
-          <p className="">Bar graph representation of length usage</p>
+          <h3 className="text-xl font-semibold">Feature Set Checklist</h3>
+          <ul className="ml-4  flex flex-col gap-2">
+            <li className="line-through">
+              Let's start off with a simple input and sort system and expand
+              from there.
+            </li>
+            <li className="line-through">
+              Parse the data, sort into lists of the same kind based on the
+              stock section size (e.g. 4x1/4).
+            </li>
+            <li className="">
+              Add ability to change the stock lengths for each size of material
+            </li>
+            <li className="">Update UI / Styling</li>
+            <li className="">
+              Basic text printable/exportable style e.g. print to pdf, email,
+              etc
+            </li>
+            <li className="">Bar graph representation of length usage</li>
+            <li className="">Inches only input (e.g. 125.25")</li>
+            <li className="">
+              Investigate process using cutoffs/waste from previous pieces first
+              before using new length
+            </li>
+            <li className=""></li>
+            <li className=""></li>
+            <li className=""></li>
+          </ul>
         </div>
-      </div>
 
-      <div className="flex flex-col text-base text-slate-800 mt-10">
-        <label htmlFor="input" className="font-semibold">
-          Input
-        </label>
-        <textarea
-          name="list"
-          id="list"
-          cols="50"
-          rows="10"
-          placeholder={textAreaPlaceholder}
-          defaultValue={tempInputValue}
-          onChange={(evt) => handleInput(evt.target.value)}
-        ></textarea>
-      </div>
+        <div className="flex flex-col text-base text-slate-800 mt-10">
+          <label htmlFor="input" className="font-semibold">
+            Input
+          </label>
+          <textarea
+            name="list"
+            id="list"
+            cols="50"
+            rows="10"
+            value={inputString}
+            placeholder={textAreaPlaceholder}
+            // defaultValue={tempInputValue}
+            onChange={(evt) => setInputString(evt.target.value)}
+          ></textarea>
+          <button
+            onClick={() => setInputString(tempInputValue)}
+            className="bg-blue-300 w-fit px-5 py-1 rounded-md mt-3"
+          >
+            Use Sample Data
+          </button>
+        </div>
 
-      {sortedList &&
-        Object.keys(sortedList.stockSizes).map((stockSize, ind) => {
-          return (
-            // one table per stock size
-            <table
-              key={ind}
-              className="mt-10 border-separate border-spacing-2 border-2 border-slate-300 w-full text-left bg-slate-600 text-slate-200 rounded-lg table-fixed"
-            >
-              <thead>
-                <tr className="text-2xl font-bold">
-                  <td>{stockSize}</td>
-                </tr>
-
-                <tr className="bg-slate-500 text-slate-200">
-                  <th className="border border-slate-400 p-2 rounded-md">
-                    Mark
-                  </th>
-                  <th className="border border-slate-400 p-2 rounded-md">
-                    Length
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* length groups */}
-                {sortedList &&
-                  sortedList.stockSizes[stockSize].lengths.map(
-                    (lengthGroup, ind) => {
-                      return (
-                        <>
-                          <tr className="text-lg font-semibold">
-                            <th>Length {lengthGroup.id}</th>
-                          </tr>
-
-                          {/* partObjects */}
-                          {lengthGroup?.parts?.map((row, ind) => {
-                            return (
-                              <tr key={ind} className="text-slate-300">
-                                <td className="border border-slate-500 p-2 rounded-md">
-                                  {row.mark}
-                                </td>
-                                <td className="border border-slate-500 p-2 rounded-md">
-                                  {row.length}
-                                </td>
-                              </tr>
-                            );
-                          })}
-
-                          {/* Offcut */}
-                          <tr key={ind} className="text-blue-300">
-                            <td className="border border-blue-500 p-2 rounded-md">
-                              Off-Cut
-                            </td>
-                            <td className="border border-blue-500 p-2 rounded-md">
-                              {lengthGroup.lengthWaste}
-                            </td>
-                          </tr>
-                        </>
-                      );
-                    }
-                  )}
-
-                {sortedList.stockSizes[stockSize].overLength.length > 0 && (
-                  <tr className="text-red-600 text-xl font-bold">
-                    <td className="p-2">Over Length</td>
+        <h3 className="mt-10 p-0 mb-0 text-xl font-semibold">Output</h3>
+        {sortedList &&
+          Object.keys(sortedList.stockSizes).map((stockSize, ind) => {
+            return (
+              // one table per stock size
+              <table
+                key={"a" + ind}
+                className="mt-3 border-separate border-spacing-2 border-2 border-slate-300 w-full text-left bg-slate-600 text-slate-200 rounded-lg table-fixed"
+              >
+                <thead>
+                  <tr className="text-2xl font-bold">
+                    <td>{stockSize}</td>
                   </tr>
-                )}
 
-                {sortedList.stockSizes[stockSize].overLength.length > 0 &&
-                  sortedList.stockSizes[stockSize].overLength.map(
-                    (row, ind) => {
-                      return (
-                        <tr key={ind} className="text-slate-300">
-                          <td className="border border-slate-500 p-2 rounded-md">
-                            {row.mark}
-                          </td>
-                          <td className="border border-slate-500 p-2 rounded-md">
-                            {row.length}
-                          </td>
-                        </tr>
-                      );
-                    }
+                  <tr className="bg-slate-500 text-slate-200">
+                    <th className="border border-slate-400 p-2 rounded-md">
+                      Mark
+                    </th>
+                    <th className="border border-slate-400 p-2 rounded-md">
+                      Length
+                    </th>
+                  </tr>
+                </thead>
+                
+                <tbody>
+                  {/* length groups */}
+                  {sortedList &&
+                    sortedList.stockSizes[stockSize].lengths.map(
+                      (lengthGroup, ind) => {
+                        return (
+                          <Fragment key={'b' + ind}>
+                            <tr className="text-lg font-semibold">
+                              <th>Length {lengthGroup.id}</th>
+                            </tr>
+
+                            {/* partObjects */}
+                            {lengthGroup?.parts?.map((row, ind) => {
+                              return (
+                                <tr key={"c" + ind} className="text-slate-300">
+                                  <td className="border border-slate-500 p-2 rounded-md">
+                                    {row.mark}
+                                  </td>
+                                  <td className="border border-slate-500 p-2 rounded-md">
+                                    {row.length}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+
+                            {/* Offcut */}
+                            <tr key={ind} className="text-blue-300">
+                              <td className="border border-blue-500 p-2 rounded-md">
+                                Off-Cut
+                              </td>
+                              <td className="border border-blue-500 p-2 rounded-md">
+                                {lengthGroup.lengthWaste}
+                              </td>
+                            </tr>
+                          </Fragment>
+                        );
+                      }
+                    )}
+
+                  {sortedList.stockSizes[stockSize].overLength.length > 0 && (
+                    <tr className="text-red-600 text-xl font-bold">
+                      <td className="p-2">Over Length</td>
+                    </tr>
                   )}
-              </tbody>
-            </table>
-          );
-        })}
+
+                  {sortedList.stockSizes[stockSize].overLength.length > 0 &&
+                    sortedList.stockSizes[stockSize].overLength.map(
+                      (row, ind) => {
+                        return (
+                          <tr key={ind} className="text-slate-300">
+                            <td className="border border-slate-500 p-2 rounded-md">
+                              {row.mark}
+                            </td>
+                            <td className="border border-slate-500 p-2 rounded-md">
+                              {row.length}
+                            </td>
+                          </tr>
+                        );
+                      }
+                    )}
+                </tbody>
+              </table>
+            );
+          })}
+      </div>
     </div>
   );
 };
